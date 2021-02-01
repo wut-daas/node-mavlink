@@ -75,6 +75,7 @@ test('MessageStartNotFoundEmptyBuffer', () => {
 });
 
 test('MessageTruncated', () => {
+    // TODO: Change this test to use a message from minimal.xml so it can be used with any dialect
     const testMessage = new MessageInterval(255, 0);
     testMessage.interval_us = 1;
     const message_id = 2;

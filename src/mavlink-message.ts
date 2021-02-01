@@ -156,7 +156,21 @@ export abstract class MAVLinkMessage implements IMAVLinkMessage, IIndexable {
     [key: string]: any;
 
     public sizeof(type: string): number {
-        switch (type) {
+        return MAVLinkMessage.sizeof(type)
+    }
+
+    public static sizeof(type: string): number {
+        // TODO: refactor to use this code in packing and parsing as well
+        const words = type.split('[')
+        let array_length = 1
+        if (words.length > 1) {
+            array_length = parseInt(words[1].slice(0, -1)) // the slice is there to remove closing ']'
+        }
+        return array_length * MAVLinkMessage.sizeof_single(words[0])
+    }
+
+    private static sizeof_single(base_type: string): number {
+        switch (base_type) {
             case "char":
             case "uint8_t":
             case "int8_t":

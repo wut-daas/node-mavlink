@@ -95,7 +95,22 @@ export class MAVLinkParserV2 extends MAVLinkParserBase {
     }
 
     private read(bytes: Buffer, start: number, type: string): number | string | undefined {
-        switch (type) {
+        // TODO: add support for array of numbers
+        const words = type.split('[')
+        const base_type = words[0]
+        const base_size = MAVLinkMessage.sizeof(base_type)
+        let array_length = 1
+        if (words.length > 1) {
+            array_length = parseInt(words[1].slice(0, -1)) // the slice is there to remove closing ']'
+        }
+        
+        // String handled as special case
+        if(base_type === 'char' && array_length > 1) {
+            const rawString = bytes.slice(start, start + array_length).toString('ascii')
+            return rawString.split('\0')[0] // return characters up to first NULL
+        }
+
+        switch (base_type) {
             case "uint8_t":
                 return bytes.readUInt8(start);
             case "uint16_t":

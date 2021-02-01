@@ -21,6 +21,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+ // TODO: Find out why this test is failing
+
 import {MAVLinkModule} from "../../mavlink-module";
 import {ParserState} from "../../parser-state.enum";
 import {messageRegistry} from "../../../assets/message-registry";
