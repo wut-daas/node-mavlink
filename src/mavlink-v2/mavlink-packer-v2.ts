@@ -68,44 +68,60 @@ export class MAVLinkPackerV2 extends MAVLinkPackerBase {
         let array_length = 1
         if (words.length > 1) {
             array_length = parseInt(words[1].slice(0, -1)) // the slice is there to remove closing ']'
+            if (base_type === 'char') { // char array is a string
+                // need special handling because the string may be shorter than message field size
+                const text = message_field as string
+                let written = bytes.write(text, start, text.length, 'ascii')
+                while (written < array_length) { // fill rest of the buffer with NULL
+                    bytes.write('\0', start + written, 1, 'ascii')
+                    written += 1
+                }
+            } else {
+                for (let i = 0; i < array_length; i++) {
+                    const offset = i * base_size + start
+                    this.write_single(bytes, message_field[i], offset, base_type)
+                }
+            }
+        } else {
+            this.write_single(bytes, message_field, start, type)
         }
-        for (let i = 0; i < array_length; i++) {
-            const offset = i * base_size + start
-            switch (base_type) {
-                case "uint8_t":
-                    bytes.writeUInt8(message_field, offset);
-                    break;
-                case "uint16_t":
-                    bytes.writeUInt16LE(message_field, offset);
-                    break;
-                case "uint32_t":
-                    bytes.writeUInt32LE(message_field, offset);
-                    break;
-                case "uint64_t":
-                    writeUInt64LE(bytes, message_field, offset);
-                    break;
-                case "int8_t":
-                    bytes.writeInt8(message_field, offset);
-                    break;
-                case "int16_t":
-                    bytes.writeInt16LE(message_field, offset);
-                    break;
-                case "int32_t":
-                    bytes.writeInt32LE(message_field, offset);
-                    break;
-                case  "int64_t":
-                    writeInt64LE(bytes, message_field,offset);
-                    break;
-                case "float":
-                    bytes.writeFloatLE(message_field, offset);
-                    break;
-                case "double":
-                    bytes.writeDoubleLE(message_field, offset);
-                    break;
-                case "char":
-                    bytes.write(message_field, offset, 1, 'ascii');
-                    break;
-              }
+    }
+
+    private write_single(bytes: Buffer, message_value: any, start: number, base_type: string): void {
+        switch (base_type) {
+            case "uint8_t":
+                bytes.writeUInt8(message_value, start);
+                break;
+            case "uint16_t":
+                bytes.writeUInt16LE(message_value, start);
+                break;
+            case "uint32_t":
+                bytes.writeUInt32LE(message_value, start);
+                break;
+            case "uint64_t":
+                writeUInt64LE(bytes, message_value, start);
+                break;
+            case "int8_t":
+                bytes.writeInt8(message_value, start);
+                break;
+            case "int16_t":
+                bytes.writeInt16LE(message_value, start);
+                break;
+            case "int32_t":
+                bytes.writeInt32LE(message_value, start);
+                break;
+            case  "int64_t":
+                writeInt64LE(bytes, message_value,start);
+                break;
+            case "float":
+                bytes.writeFloatLE(message_value, start);
+                break;
+            case "double":
+                bytes.writeDoubleLE(message_value, start);
+                break;
+            case "char":
+                bytes.write(message_value, start, 1, 'ascii');
+                break;
         }
     }
 }
